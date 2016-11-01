@@ -141,14 +141,13 @@ class Graph(object):
 
         # construct a list containing EnsembleNode nodes (constructed from the
         # graph nodes) and a list containing edges between these ensemble nodes
-        if not all(isinstance(node, EnsembleNode) for node in self.nodes):
-            ensemble_nodes = [EnsembleNode(
-                name=node.node_name, data=node.node_data,
-                father=None) for node in self.nodes]
-            ensemble_edges = [Edge(
-                name=edge.edge_name, data=edge.edge_data, cost=edge.edge_cost,
-                startnode=ensemble_nodes[self.nodes.index(edge.edge_startnode)],
-                endnode=ensemble_nodes[self.nodes.index(edge.edge_endnode)]) for edge in self.edges]
+        ensemble_nodes = [EnsembleNode(
+            name=node.node_name, data=node.node_data,
+            father=None) for node in self.nodes]
+        ensemble_edges = [Edge(
+            name=edge.edge_name, data=edge.edge_data, cost=edge.edge_cost,
+            startnode=ensemble_nodes[self.nodes.index(edge.edge_startnode)],
+            endnode=ensemble_nodes[self.nodes.index(edge.edge_endnode)]) for edge in self.edges]
 
         # set spanning_tree nodes list
         spanning_tree.nodes = ensemble_nodes
@@ -174,29 +173,27 @@ class Graph(object):
         n_nodes = self.get_nb_nodes()
         spanning_tree = Graph(name=self.graph_name + " Prim algorithm spanning tree")
         spanning_tree.nodes = self.nodes
-
-        if not all(isinstance(node, EnsembleNode) for node in self.nodes):
             
-            # Create queue containing EnsembleNode nodes constructed from graph self
-            # the EnsembleNode corresponding to source_node gets 0 as min_weight value,
-            # others get +inf
-            nodes_queue = PriorityMinQueue()
-            for node in self.nodes:
-                if node == source_node:
-                    ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=0)
-                else:
-                    ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=float('inf'))
-                nodes_queue.enqueue(ensemble_node)
-            
-            # Create list of edges between EnsembleNode corresponding to 
-            # edges in the graph self 
-            ensemble_edges = [Edge(
-                name=edge.edge_name, data=edge.edge_data, cost=edge.edge_cost,
-                startnode=nodes_queue.items[self.nodes.index(edge.edge_startnode)],
-                endnode=nodes_queue.items[self.nodes.index(edge.edge_endnode)]) for edge in self.edges]
+        # Create queue containing EnsembleNode nodes constructed from graph self
+        # the EnsembleNode corresponding to source_node gets 0 as min_weight value,
+        # others get +inf
+        nodes_queue = PriorityMinQueue()
+        for node in self.nodes:
+            if node == source_node:
+                ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=0)
+            else:
+                ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=float('inf'))
+            nodes_queue.enqueue(ensemble_node)
+        
+        # Create list of edges between EnsembleNode corresponding to 
+        # edges in the graph self 
+        ensemble_edges = [Edge(
+            name=edge.edge_name, data=edge.edge_data, cost=edge.edge_cost,
+            startnode=nodes_queue.items[self.nodes.index(edge.edge_startnode)],
+            endnode=nodes_queue.items[self.nodes.index(edge.edge_endnode)]) for edge in self.edges]
 
-            # Make dictionnary mapping ensembles_nodes to nodes
-            ensnode_to_node_dict = {ens_node: node for (ens_node, node) in zip(nodes_queue.items, self.nodes)}
+        # Make dictionnary mapping ensembles_nodes to nodes
+        ensnode_to_node_dict = {ens_node: node for (ens_node, node) in zip(nodes_queue.items, self.nodes)}
 
         while not nodes_queue.is_empty():
             n = nodes_queue.dequeue()
