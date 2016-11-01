@@ -192,7 +192,8 @@ class Graph(object):
             startnode=nodes_queue.items[self.nodes.index(edge.edge_startnode)],
             endnode=nodes_queue.items[self.nodes.index(edge.edge_endnode)]) for edge in self.edges]
 
-        # Make dictionnary mapping ensembles_nodes to nodes
+        # Make dictionnary mapping ensembles_nodes to nodes to look for
+        # orginal self graph nodes easily when constructing spanning tree edges
         ensnode_to_node_dict = {ens_node: node for (ens_node, node) in zip(nodes_queue.items, self.nodes)}
 
         while not nodes_queue.is_empty():

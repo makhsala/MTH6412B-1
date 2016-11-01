@@ -2,8 +2,12 @@ class Queue(object):
     "Une implementation de la structure de donnees << file >>."
 
     def __init__(self):
-        self.items = []
+        self._items = []
 
+    @property
+    def items(self):
+        return self._items
+        
     def enqueue(self, item):
         "Ajoute `item` a la fin de la file."
         self.items.append(item)
