@@ -7,7 +7,7 @@ from acm import *
 from ensemble_node import EnsembleNode
 
 
-graph = Graph(name='Application cours')
+graph = Graph(name='Application cours Kruskal')
 alphabet = list('ABCDEFGHI')
 for k in alphabet:
     node_k = Node(name=k)
@@ -43,6 +43,14 @@ edge = Edge(name='BH', startnode=graph.nodes[8], endnode=graph.nodes[7], cost=7.
 graph.add_edge(edge)
 
 #construct MWST of the example graph, plot it and print its weight
-kruskal_st = graph.kruskal2()
-kruskal_st.plot_graph()
+
+kruskal_st = graph.kruskal()
+
+
+
 print 'MST WEIGHT : ' + str(kruskal_st.get_graph_weight())
+for e in kruskal_st.edges:
+    print e.edge_name,
+    print e.edge_cost
+
+kruskal_st.plot_graph()

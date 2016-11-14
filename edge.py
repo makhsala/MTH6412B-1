@@ -27,11 +27,6 @@ class Edge(object):
         return self.__edge_name
 
     @property
-    def edge_id(self):
-        " Donne le numero d'identification de l arc."
-        return self.__edge_id
-
-    @property
     def edge_data(self):
         """Donne les donnees contenues dans le l'arc."""
         return self.__edge_data
@@ -81,13 +76,12 @@ class Edge(object):
         self.__edge_cost = max(0, cost)
 
     def __repr__(self):
-        id = self.edge_id
         name = self.edge_name
         data = self.__edge_data
         startnode = self.edge_startnode
         endnode = self.edge_endnode
         cost = self.edge_cost
-        s = 'Edge %s (id : %d) (cost : %.2f) ' % (name, id, cost)
+        s = 'Edge %s (cost : %.2f) ' % (name,  cost)
         s += 'start node : ' + repr(startnode) + ' end node : ' + \
             repr(endnode)
         s += ' (donnees: ' + repr(data) + ')\n'

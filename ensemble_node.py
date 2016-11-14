@@ -69,7 +69,6 @@ class EnsembleNode(Node):
         # Set father of met nodes to the root af the linked component
         for parent in parents:
             parent.father = root
-        
         return root
 
     def is_root(self):
@@ -105,6 +104,8 @@ class EnsembleNode(Node):
         
         # The node and otherEnsembleNode must belong
         # to different nodes linked ensembles
+        # verifier si on reverifi cela a l interieur de Kruskal
+
         if own_root == other_root:
             raise ValueError("Nodes belong to the same linked ensembles")
         else:
@@ -121,14 +122,19 @@ class EnsembleNode(Node):
 
         if own_root.rank == other_root.rank:
             other_root.father = own_root
-            other_root.rank = other_root.rank + 1
+            other_root.rank =+ 1
         elif own_root.rank > other_root.rank:
             other_root.father = own_root
         else:
             own_root.father = other_root
 
     def __repr__(self):
-        fatherNode = self.father
-        s = Node.__repr__(self)
-        s += " and with father node " + Node.__repr__(fatherNode)
+        if (self.father):
+            fatherNode = self.father
+            s = Node.__repr__(self)
+            s += " and with father node " + Node.__repr__(fatherNode)
+        else:
+            s = Node.__repr__(self)
+            s += " this node has no father"
+
         return s

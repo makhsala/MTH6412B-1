@@ -17,7 +17,7 @@ class Node(object):
         if data is not None:
             self.__node_data = data
         else:
-            self.__node_data = (random.random() * 1000, random.random() * 1000)
+            self.__node_data = (round(random.random() * 1000, 2), round(random.random() * 1000, 2))
 
     @property
     def node_count(self):
@@ -51,8 +51,8 @@ class Node(object):
     def __repr__(self):
         name = self.node_name
         data = self.node_data
-        s = 'Noeud %s ' + name
-        s += ' (donnees: ' + repr(data) + ')'
+        s = 'Noeud  '+name
+        #s += ' (donnees: ' + repr(data) + ')'
         return s
 
 if __name__ == '__main__':
