@@ -5,9 +5,7 @@ Created on Sun Sep 18 20:06:37 2016
 @author: makhloufi, lacroix
 """
 import numpy as np
-import sys
 from edge import Edge
-from acm import ACM
 from ensemble_node import EnsembleNode
 from queue import Queue, PriorityMinQueue
 from node import Node
@@ -36,8 +34,9 @@ class Graph(object):
         # on rempli la matrice d'adjacence à chaque fois on ajoute un arc
         # < pour éviter de stocker l'arrete deux fois
         if (edge.edge_startnode != edge.edge_endnode):
-            self.__adj_matrix[edge.edge_startnode][edge.edge_endnode] = edge.edge_cost
-            self.__adj_matrix[edge.edge_endnode][edge.edge_startnode] = edge.edge_cost
+            self.__adj_matrix[edge.edge_startnode][edge.edge_endnode] = edge
+            self.__adj_matrix[edge.edge_endnode][edge.edge_startnode] = edge
+            self.set_graph_weight(self.get_graph_weight()+ edge.edge_cost)
             self.__edges.append(edge)
 
     @property
@@ -172,8 +171,6 @@ class Graph(object):
             # belong to the same connected ensembles
             if edge.edge_startnode.get_root_and_compress() != edge.edge_endnode.get_root_and_compress():
                 spanning_tree.add_edge(edge)
-                spanning_tree.set_graph_weight(spanning_tree.get_graph_weight()
-                                               + edge.edge_cost)
                 len_spanning_tree_edges =+ 1
                 edge.edge_startnode.rank_union(edge.edge_endnode)
 
@@ -181,132 +178,47 @@ class Graph(object):
 
     def prim(self):
 
-        n_nodes = self.get_nb_nodes()
-        spanning_tree = Graph(name=self.graph_name + " Prim algorithm spanning tree")
-        spanning_tree.nodes = self.nodes
-
-            
-        # Create queue containing EnsembleNode nodes constructed from graph self
-        # the EnsembleNode corresponding to source_node gets 0 as min_weight value,
-        # others get +inf
-        nodes_queue = PriorityMinQueue()
-        source_node = self.nodes[0]
-        ensemble_node = EnsembleNode(name=source_node.node_name, data=source_node.node_data, min_weight=0)
-        nodes_queue.enqueue(ensemble_node)
-        for node in self.nodes[1:]:
-
-            ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=float('inf'))
-            nodes_queue.enqueue(ensemble_node)
-        
-        # Create list of edges between EnsembleNode corresponding to 
-        # edges in the graph self 
-        ensemble_edges = [Edge(
-            name=edge.edge_name, data=edge.edge_data, cost=edge.edge_cost,
-            startnode=nodes_queue.items[self.nodes.index(edge.edge_startnode)],
-            endnode=nodes_queue.items[self.nodes.index(edge.edge_endnode)]) for edge in self.edges]
-
-        # Make dictionnary mapping ensembles_nodes to nodes to look for
-        # orginal self graph nodes easily when constructing spanning tree edges
-        ensnode_to_node_dict = {ens_node: node for (ens_node, node) in zip(nodes_queue.items, self.nodes)}
-
-        while not nodes_queue.is_empty():
-            n = nodes_queue.dequeue()
-            n.min_weight = 0
-
-            # If n is not the first node to be chosen (the EnsembleNode associated to source_node),
-            # add edge between n and its father to the spanning tree Graph
-            if not n.is_root():
-                edge_tree = self.get_edge(ensnode_to_node_dict[n],ensnode_to_node_dict[n.father])
-                spanning_tree.add_edge(edge_tree)
-                spanning_tree.set_graph_weight(spanning_tree.get_graph_weight()
-                                           + edge_tree.edge_cost)
-
-            # Search over all ensemble_edges for edges connecting n to other nodes u
-            # and update u (min_weight, father) if necessary  
-            for edge in ensemble_edges:
-                if ((edge.edge_startnode == n) | (edge.edge_endnode == n)):
-                    u = edge.edge_startnode if edge.edge_endnode == n else edge.edge_endnode
-                    if u.min_weight > edge.edge_cost:
-                        u.min_weight = edge.edge_cost
-                        u.father = n
-
-        return spanning_tree
-
-    def prim2(self):
-
-        #n_nodes = self.get_nb_nodes()
         spanning_tree = Graph(name=self.graph_name + " Prim algorithm spanning tree")
         spanning_tree.nodes = self.nodes
 
         # Initialisation of a queue containing all nodes
         nodes_queue = PriorityMinQueue()
-
+        ensnode_to_node ={}
         # choosing the source node as the first element in self.nodes list
         node = self.nodes[0]
-        ensnode_to_node_dict ={}
-        # we enqueue the tuples of the source node as a Node object to simplify
-        # the use of the adj_matr and as an ENsembleNode objectinstaed of
-        # searching the key by item for to get the adjacency matrix row,
-        # we used a tuple to avoid the search for the right key in every iteration
-        # we use  a mapping dictionnary between node and ensnode
-        # to  get edges faster and avoid search key by item
-        # we will use more memory but less CPU time
         ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=0)
-        ensnode_to_node_dict[ensemble_node] = node
-        nodes_queue.enqueue((node,ensemble_node))
+        ensnode_to_node[ensemble_node] = node
+        nodes_queue.enqueue(ensemble_node)
 
         for node in self.nodes[1:]:
-
             ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=float('inf'))
-            ensnode_to_node_dict[ensemble_node] = node
-            nodes_queue.enqueue((node,ensemble_node))
+            ensnode_to_node[ensemble_node] = node
+            nodes_queue.enqueue(ensemble_node)
+
+        # exploring graph nodes
 
         while not nodes_queue.is_empty():
             tuple_father = nodes_queue.dequeue()
-            if tuple_father[1].father :
-                # edge_tree is the edge we will add to the spanning tree
-                edge_tree = self.get_edge(ensnode_to_node_dict[tuple_father[1]],
-                                            ensnode_to_node_dict[tuple_father[1].father])
-                spanning_tree.edges.append(edge_tree)
-                spanning_tree.set_graph_weight(spanning_tree.get_graph_weight()
-                                               +edge_tree.edge_cost)
 
-            # exploring the neighbors
+            if tuple_father.father:
+                    spanning_tree.add_edge(self.adj_matrix[ensnode_to_node[tuple_father]]\
+                                [ensnode_to_node[tuple_father.father]])
 
-            for key in self.adj_matrix[tuple_father[0]].keys():
-            #modify the attributes of the EnsembleNodes objects
+            for key in self.adj_matrix[ensnode_to_node[tuple_father]].keys():
+
                 for n in nodes_queue.items:
-                    if (n[0] == key ) and n[1].min_weight > self.adj_matrix[tuple_father[0]][key]:
 
-                        # instaed of searching the key by item for to get the adjacency matrix row,
+                    if (ensnode_to_node[n] == key) and\
+                            (self.adj_matrix[ensnode_to_node[tuple_father]][key].edge_cost < n.min_weight):
+
+                        adj_edge = self.adj_matrix[ensnode_to_node[tuple_father]][key]
+                        # instead of searching the key by item for to get the adjacency matrix row,
                         # we used a tuple to avoid the search for the right key in every iteration
-                        n[1].father = tuple_father[1]
-                        n[1].min_weight = self.adj_matrix[tuple_father[0]][key]
-
+                        n.father = tuple_father
+                        n.min_weight = adj_edge.edge_cost
+                        break
 
         return spanning_tree
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
 

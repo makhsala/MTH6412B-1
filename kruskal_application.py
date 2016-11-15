@@ -1,11 +1,5 @@
-import numpy as np
-import random
-from node import Node
-from edge import Edge
 from graph import *
 from acm import *
-from ensemble_node import EnsembleNode
-
 
 graph = Graph(name='Application cours Kruskal')
 alphabet = list('ABCDEFGHI')
@@ -42,7 +36,7 @@ graph.add_edge(edge)
 edge = Edge(name='BH', startnode=graph.nodes[8], endnode=graph.nodes[7], cost=7.0)
 graph.add_edge(edge)
 
-#construct MWST of the example graph, plot it and print its weight
+# construct MWST of the example graph, plot it and print its weight
 
 kruskal_st = graph.kruskal()
 

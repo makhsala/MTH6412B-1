@@ -1,11 +1,5 @@
-import numpy as np
-import random
-from node import Node
-from edge import Edge
 from graph import *
 from acm import *
-from ensemble_node import EnsembleNode
-
 
 graph = Graph(name='Application cours Prim')
 alphabet = list('ABCDEFGHI')
@@ -43,10 +37,7 @@ edge = Edge(name='BH', startnode=graph.nodes[8], endnode=graph.nodes[7], cost=7.
 graph.add_edge(edge)
 
 #construct MWST of the example graph, plot it and print its weight
-prim_st = graph.prim2()
-#prim_st = graph.prim()
-
-
+prim_st = graph.prim()
 
 print 'MST WEIGHT : ' + str(prim_st.get_graph_weight())
 for e in prim_st.edges:
