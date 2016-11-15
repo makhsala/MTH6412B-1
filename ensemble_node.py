@@ -1,5 +1,4 @@
 from node import Node
-import warnings
 
 
 class EnsembleNode(Node):
@@ -122,7 +121,7 @@ class EnsembleNode(Node):
 
         if own_root.rank == other_root.rank:
             other_root.father = own_root
-            other_root.rank =+ 1
+            other_root.rank  += 1
         elif own_root.rank > other_root.rank:
             other_root.father = own_root
         else:

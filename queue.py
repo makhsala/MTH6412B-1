@@ -1,5 +1,5 @@
 class Queue(object):
-    "Une implementation de la structure de donnees << file >>."
+    """Une implementation de la structure de donnees << file >>."""
 
     def __init__(self):
         self._items = []
@@ -45,8 +45,7 @@ class PriorityMinQueue(Queue):
 
     def dequeue(self):
         "Retire l'objet ayant la plus petite priorite."
-        if type(self.items[0]) is tuple:
-            return self.items.pop(self.items.index(min(self.items, key=lambda t: t[1])))
+
         return self.items.pop(self.items.index(min(self.items)))
 
 
@@ -55,4 +54,3 @@ class PriorityMaxQueue(Queue):
     def dequeue(self):
         "Retire l'objet ayant la plus haute priorite."
         return self.items.pop(self.items.index(max(self.items)))
-

@@ -10,7 +10,6 @@ from edge import Edge
 from node import Node
 from read_stsp import *
 import sys
-import random
 
 
 def construct_graph(file):
@@ -46,12 +45,9 @@ def construct_graph(file):
 
 # Construct and print example Graph
 G = construct_graph(sys.argv[1])
-
-
 # construct G minimal weight spanning tree, plot it and print its weight
-#G_spanning_tree = G.kruskal()
-#G_spanning_tree = G.prim(G.nodes[0])
-G_spanning_tree = G.prim2()
+# G_spanning_tree = G.kruskal()
+G_spanning_tree = G.prim()
 
 print("MST weight of the graph is " + str(G_spanning_tree.get_graph_weight()))
 G.plot_graph()
