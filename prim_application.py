@@ -36,12 +36,5 @@ graph.add_edge(edge)
 edge = Edge(name='BH', startnode=graph.nodes[8], endnode=graph.nodes[7], cost=7.0)
 graph.add_edge(edge)
 
-#construct MWST of the example graph, plot it and print its weight
-prim_st = graph.prim()
-
-print 'MST WEIGHT : ' + str(prim_st.get_graph_weight())
-for e in prim_st.edges:
-    print e.edge_name,
-    print e.edge_cost
-
-prim_st.plot_graph()
+# construct MWST of the example graph, plot it and print its weight
+prim_st = graph.rsl()

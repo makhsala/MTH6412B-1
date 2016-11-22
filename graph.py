@@ -9,6 +9,7 @@ from edge import Edge
 from ensemble_node import EnsembleNode
 from queue import Queue, PriorityMinQueue
 from node import Node
+from stack import Stack
 
 
 class Graph(object):
@@ -26,8 +27,11 @@ class Graph(object):
 
     def add_node(self, node):
         """Ajouter un noeud au graphe et initialisé la matrice d'adjacence"""
+
         self.__nodes.append(node)
+
         self.__adj_matrix[node] = {}
+
 
     def add_edge(self, edge):
         "Ajout un edge au graphe et remplissage de adj_matrix"
@@ -38,6 +42,16 @@ class Graph(object):
             self.__adj_matrix[edge.edge_endnode][edge.edge_startnode] = edge
             self.set_graph_weight(self.get_graph_weight()+ edge.edge_cost)
             self.__edges.append(edge)
+
+    def add_edge2(self, edge, startnode, endnode):
+
+        if (startnode != endnode):
+            self.__adj_matrix[startnode][endnode] = edge
+            self.__adj_matrix[endnode][startnode] = edge
+            self.set_graph_weight(self.get_graph_weight()+ edge.edge_cost)
+            self.__edges.append(edge)
+
+
 
     @property
     def graph_name(self):
@@ -179,39 +193,40 @@ class Graph(object):
     def prim(self):
 
         spanning_tree = Graph(name=self.graph_name + " Prim algorithm spanning tree")
-        spanning_tree.nodes = self.nodes
+
 
         # Initialisation of a queue containing all nodes
         nodes_queue = PriorityMinQueue()
-        ensnode_to_node ={}
+        # ensnode_to_node ={}
         # choosing the source node as the first element in self.nodes list
         node = self.nodes[0]
-        ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=0)
-        ensnode_to_node[ensemble_node] = node
+        ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=0, original_node=node)
+        # ensnode_to_node[ensemble_node] = node
+        spanning_tree.add_node(ensemble_node)
         nodes_queue.enqueue(ensemble_node)
 
         for node in self.nodes[1:]:
-            ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=float('inf'))
-            ensnode_to_node[ensemble_node] = node
+            ensemble_node = EnsembleNode(name=node.node_name,
+                                         data=node.node_data, min_weight=float('inf'), original_node=node)
+            # ensnode_to_node[ensemble_node] = node
+            spanning_tree.add_node(ensemble_node)
             nodes_queue.enqueue(ensemble_node)
-
         # exploring graph nodes
-
         while not nodes_queue.is_empty():
             tuple_father = nodes_queue.dequeue()
 
             if tuple_father.father:
-                    spanning_tree.add_edge(self.adj_matrix[ensnode_to_node[tuple_father]]\
-                                [ensnode_to_node[tuple_father.father]])
+                edge_add = self.adj_matrix[tuple_father.original_node][tuple_father.father.original_node]
+                spanning_tree.add_edge2(edge_add, tuple_father,tuple_father.father)
 
-            for key in self.adj_matrix[ensnode_to_node[tuple_father]].keys():
+            for key in self.adj_matrix[tuple_father.original_node].keys():
 
                 for n in nodes_queue.items:
 
-                    if (ensnode_to_node[n] == key) and\
-                            (self.adj_matrix[ensnode_to_node[tuple_father]][key].edge_cost < n.min_weight):
+                    if (n.original_node == key) and\
+                            (self.adj_matrix[tuple_father.original_node][key].edge_cost < n.min_weight):
 
-                        adj_edge = self.adj_matrix[ensnode_to_node[tuple_father]][key]
+                        adj_edge = self.adj_matrix[tuple_father.original_node][key]
                         # instead of searching the key by item for to get the adjacency matrix row,
                         # we used a tuple to avoid the search for the right key in every iteration
                         n.father = tuple_father
@@ -219,6 +234,40 @@ class Graph(object):
                         break
 
         return spanning_tree
+
+    def dfs(self,root):
+        """
+         non recursive implementation
+        :return:
+        """
+
+        self.dfs_visit(root)
+        print root
+        parent = root.father
+        while parent:
+            print parent
+            parent = parent.father
+
+        return
+
+    def dfs_visit(self, root):
+        pile = Stack()
+        pile.push(root)  # root devient racine d'une nouvelle arborescence
+
+        while not pile.is_empty():
+            u = pile.pop()
+            u.set_visited()
+            for neighbor in self.adj_matrix[u].keys():
+                if not neighbor.is_visited():
+                    pile.push(neighbor)
+        return
+
+    def rsl(self):
+        G = self.prim()
+        root = G.nodes[0]
+        G.dfs(root)
+        print "here"
+
 
 if __name__ == '__main__':
 
