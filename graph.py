@@ -32,7 +32,6 @@ class Graph(object):
 
         self.__adj_matrix[node] = {}
 
-
     def add_edge(self, edge):
         "Ajout un edge au graphe et remplissage de adj_matrix"
         # on rempli la matrice d'adjacence à chaque fois on ajoute un arc
@@ -45,11 +44,10 @@ class Graph(object):
 
     def add_edge2(self, edge, startnode, endnode):
 
-        if (startnode != endnode):
-            self.__adj_matrix[startnode][endnode] = edge
-            self.__adj_matrix[endnode][startnode] = edge
-            self.set_graph_weight(self.get_graph_weight()+ edge.edge_cost)
-            self.__edges.append(edge)
+        self.__adj_matrix[startnode][endnode] = edge
+        self.__adj_matrix[endnode][startnode] = edge
+        self.set_graph_weight(self.get_graph_weight()+ edge.edge_cost)
+        self.__edges.append(edge)
 
 
 
@@ -217,7 +215,7 @@ class Graph(object):
 
             if tuple_father.father:
                 edge_add = self.adj_matrix[tuple_father.original_node][tuple_father.father.original_node]
-                spanning_tree.add_edge2(edge_add, tuple_father,tuple_father.father)
+                spanning_tree.add_edge2(edge_add, tuple_father, tuple_father.father)
 
             for key in self.adj_matrix[tuple_father.original_node].keys():
 
@@ -235,13 +233,14 @@ class Graph(object):
 
         return spanning_tree
 
+
     def dfs(self,root):
         """
          non recursive implementation
         :return:
         """
 
-        self.dfs_visit(root)
+        root = self.dfs_visit(root)
         print root
         parent = root.father
         while parent:
@@ -251,22 +250,38 @@ class Graph(object):
         return
 
     def dfs_visit(self, root):
+        cycle_nodes = []
         pile = Stack()
-        pile.push(root)  # root devient racine d'une nouvelle arborescence
 
+        root.parent = None
+        pile.push(root)
+        neighbor = None
+        # root devient racine d'une nouvelle arborescence
         while not pile.is_empty():
             u = pile.pop()
+            cycle_nodes.append(u)
             u.set_visited()
+
             for neighbor in self.adj_matrix[u].keys():
                 if not neighbor.is_visited():
                     pile.push(neighbor)
-        return
+        return cycle_nodes
 
     def rsl(self):
         G = self.prim()
         root = G.nodes[0]
-        G.dfs(root)
-        print "here"
+        # c_n cycle nodes
+        c_n = G.dfs_visit(root)
+        # c_edges
+        c_e =[]
+        for i in xrange(len(c_n)-1):
+            c_e.append(self.adj_matrix[c_n[i].original_node][c_n[i+1].original_node])
+        c_e.append(self.adj_matrix[c_n[-1].original_node][c_n[0].original_node])
+        print c_e
+
+
+
+
 
 
 if __name__ == '__main__':

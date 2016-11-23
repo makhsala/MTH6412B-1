@@ -47,8 +47,10 @@ def construct_graph(file):
 G = construct_graph(sys.argv[1])
 # construct G minimal weight spanning tree, plot it and print its weight
 # G_spanning_tree = G.kruskal()
-G_spanning_tree = G.prim()
+#G_spanning_tree = G.prim()
+G.rsl()
 
-print("MST weight of the graph is " + str(G_spanning_tree.get_graph_weight()))
-G.plot_graph()
-G_spanning_tree.plot_graph()
+#print("MST weight of the graph is " + str(G_spanning_tree.get_graph_weight()))
+#G.plot_graph()
+#G_spanning_tree.plot_graph()
+mai
