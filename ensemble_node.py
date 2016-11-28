@@ -10,18 +10,24 @@ class EnsembleNode(Node):
     or tree if the structure doesn't show cycles
     """
 
-    def __init__(self, name='Sans nom', data=None, father=None, min_weight=None):
+    def __init__(self, name='Sans nom', data=None, father=None, min_weight=None, original_node=None):
         Node.__init__(self, name, data)
         # if father is None:
         #     self.__father = self
         # else:
+
+        self.__original_node = original_node
         self.__father = father
         self.__min_weight = min_weight
         self.__rank = 0
+        self.__visited = False
 
     @property
     def father(self):
         return self.__father
+    @property
+    def original_node(self):
+        return self.__original_node
 
     @property
     def rank(self):
@@ -35,6 +41,9 @@ class EnsembleNode(Node):
     def father(self, father):
         self.__father = father
 
+    @original_node.setter
+    def original_node(self,node):
+        self.__original_node = node
     @rank.setter
     def rank(self, rank):
         self.__rank = rank
@@ -76,6 +85,13 @@ class EnsembleNode(Node):
         the linked ensemble/tree it belongs to, else false
         """
         return (self.__father == None)
+
+    def set_visited(self):
+        self.__visited = True
+
+    def is_visited(self):
+        return self.__visited
+
 
     def __lt__(self, other):
         """methode pour comparer les noeuds < """
@@ -128,12 +144,12 @@ class EnsembleNode(Node):
             own_root.father = other_root
 
     def __repr__(self):
-        if (self.father):
-            fatherNode = self.father
-            s = Node.__repr__(self)
-            s += " and with father node " + Node.__repr__(fatherNode)
-        else:
-            s = Node.__repr__(self)
-            s += " this node has no father"
+        #if (self.father):
+            #fatherNode = self.father
+        s = Node.__repr__(self)
+         #   s += " and with father node " + Node.__repr__(fatherNode)
+        #else:
+            #s = Node.__repr__(self)
+        #s += " this node has no father"
 
         return s

@@ -35,16 +35,11 @@ edge = Edge(name='IG', startnode=graph.nodes[8], endnode=graph.nodes[6], cost=6.
 graph.add_edge(edge)
 edge = Edge(name='BH', startnode=graph.nodes[8], endnode=graph.nodes[7], cost=7.0)
 graph.add_edge(edge)
-
-# construct MWST of the example graph, plot it and print its weight
+# construct MWST of the example graph, plot it and print its weight.
 
 kruskal_st = graph.kruskal()
-
-
 
 print 'MST WEIGHT : ' + str(kruskal_st.get_graph_weight())
 for e in kruskal_st.edges:
     print e.edge_name,
     print e.edge_cost
-
-kruskal_st.plot_graph()

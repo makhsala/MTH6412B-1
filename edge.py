@@ -82,9 +82,9 @@ class Edge(object):
         endnode = self.edge_endnode
         cost = self.edge_cost
         s = 'Edge %s (cost : %.2f) ' % (name,  cost)
-        s += 'start node : ' + repr(startnode) + ' end node : ' + \
-            repr(endnode)
-        s += ' (donnees: ' + repr(data) + ')\n'
+        #s += 'start node : ' + repr(startnode) + ' end node : ' + \
+          #  repr(endnode)
+        #s += ' (donnees: ' + repr(data) + ')\n'
         return s
 
 if __name__ == '__main__':
