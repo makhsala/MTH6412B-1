@@ -4,6 +4,7 @@ Created on Sun Sep 18 20:06:37 2016
 
 @author: makhloufi, lacroix
 """
+
 import numpy as np
 from edge import Edge
 from ensemble_node import EnsembleNode
@@ -51,8 +52,6 @@ class Graph(object):
     def graph_name(self):
         "Donne le nom du graphe."
         return self.__graph_name
-
-
 
     @graph_name.setter
     def graph_name(self, name):
@@ -231,13 +230,16 @@ class Graph(object):
                 return n
 
     def dfs(self, root_node):
-
+        """
+        Depth first search algorithm
+        returns a sorted list of nodes to construct
+        a cycle by linking the i and i+1 node
+        """
         root = self.node_to_ensnode(root_node)
         cycle_nodes = []
         pile = Stack()
         pile.push(root)
         neighbor = None
-        # root devient racine d'une nouvelle arborescence
         while not pile.is_empty():
             u = pile.pop()
             cycle_nodes.append(u)
@@ -258,25 +260,16 @@ class Graph(object):
             raise ValueError("Unrecognized algorithm")
         # c_n cycle nodes
         c_n = G.dfs(root)
-        # c_edges
-        c_e =[]
-        # cycle cost
-        c_c = 0.0
-        dic_ret = {}
-
+        cycle = Graph("tournee")
+        cycle.nodes = self.nodes
 
         for i in xrange(len(c_n)-1):
             e = self.adj_matrix[c_n[i].original_node][c_n[i+1].original_node]
-            c_c += e.edge_cost
-            c_e.append(e)
+
+            cycle.add_edge(e)
         e = self.adj_matrix[c_n[-1].original_node][c_n[0].original_node]
-        c_e.append(e)
-        c_c += e.edge_cost
-       # print "cycle cost:",
-       # print c_c
-        dic_ret["c_e"] = c_e
-        dic_ret["c_c"] = c_c
-        return dic_ret
+        cycle.add_edge(e)
+        return cycle
 
 if __name__ == '__main__':
 

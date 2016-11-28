@@ -12,11 +12,12 @@ from read_stsp import *
 import sys
 
 # optimal distances
-
 opt_dist = { 'bayg29' : 1610, 'bays29' : 2020, 'brazil58' : 25395,
              'brg180': 1950, 'dantzig42' : 699, 'fri26' : 937, 'gr17' : 2085,
              'gr21' : 2707, 'gr24' : 1272, 'gr48' : 5046, 'gr120' : 6942,
              'hk48' : 11461, 'pa561' : 2763, 'swiss42' : 1273 }
+st_algo_list = ["kruskal","prim"]
+
 
 def construct_graph(file):
     """
@@ -50,37 +51,48 @@ def construct_graph(file):
 
     return G
 
+
+def plot_cycle(best_cycle):
+    print best_cycle.graph_name,
+    print "root: ",
+    print root_plot,
+    print best_cycle.get_graph_weight(),
+    print opt_dist[best_cycle.graph_name],
+    print "gap: ",
+    print (best_cycle.get_graph_weight()-opt_dist["bayg29"])
+    best_cycle.plot_graph()
+
 # result file
 rf = open('resultfile', 'w')
 
+# graph to plot
+root_plot = None
+best_gap = 10000000000
+best_cycle = None
 
-# Construct and print example Graph
-# construct G minimal weight spanning tree, plot it and print its weight
-# G_spanning_tree = G.kruskal()
-#G_spanning_tree = G.prim()
-
-st_algo_list = ["kruskal","prim"]
-# st_algo ="kruskal"
-
-dic = {}
-
-# instance| kruskal|source|Prim|source|optimal|Gap avec tournée optimal
-s = "INSTANCE_NAME|ROOT|PRIM_SOL|GAP_Prim|KRUSKAL_SOL|GAP_KRUSKAL|OPTIMAL_SOL\n"
+# the structure of the file  we use | as a a delimiter
+s = "INSTANCE_NAME|ROOT_CORDINATES|PRIM_SOL|GAP_Prim |KRUSKAL_SOL|GAP_KRUSKAL|OPTIMAL_SOL\n"
 rf.write(s)
+
+# We can give one or all the tsp files in arguments
 for i in range(1,len(sys.argv)):
     graph = construct_graph(sys.argv[i])
     cle = graph.graph_name.strip()
+
     for root in graph.nodes:
 
         s = graph.graph_name + "|" + repr(root)
         for st_algo in st_algo_list:
-            dic = graph.rsl(root, st_algo)
-            gap = dic["c_c"]-opt_dist[cle]
-            s += "|" + str(dic["c_c"])+"|"+str(gap)
+            cycle = graph.rsl(root, st_algo)
+            gap = cycle.get_graph_weight()-opt_dist[cle]
+            if gap < best_gap:
+                best_cycle = cycle
+                root_plot = root
+                best_cycle.graph_name = graph.graph_name
+                best_gap = gap
+            s += "|" + str(cycle.get_graph_weight())+"|"+str(gap)
         s += "|" + str(opt_dist[cle])+"\n"
         rf.write(s)
 
+plot_cycle(best_cycle)
 
-#print("MST weight of the graph is " + str(G_spanning_tree.get_graph_weight()))
-#G.plot_graph()
-#G_spanning_tree.plot_graph()

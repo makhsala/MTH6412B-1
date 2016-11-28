@@ -1,3 +1,4 @@
+
 from node import Node
 
 
@@ -144,12 +145,12 @@ class EnsembleNode(Node):
             own_root.father = other_root
 
     def __repr__(self):
-        #if (self.father):
-            #fatherNode = self.father
-        s = Node.__repr__(self)
-         #   s += " and with father node " + Node.__repr__(fatherNode)
-        #else:
-            #s = Node.__repr__(self)
-        #s += " this node has no father"
+        if (self.father):
+            fatherNode = self.father
+            s = Node.__repr__(self)
+            s += " and with father node " + Node.__repr__(fatherNode)
+        else:
+            s = Node.__repr__(self)
+            s += " this node has no father"
 
         return s
