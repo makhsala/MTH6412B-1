@@ -1,5 +1,4 @@
 from graph import *
-from acm import *
 
 graph = Graph(name='Application cours Prim')
 alphabet = list('ABCDEFGHI')
@@ -36,16 +35,11 @@ graph.add_edge(edge)
 edge = Edge(name='BH', startnode=graph.nodes[8], endnode=graph.nodes[7], cost=7.0)
 graph.add_edge(edge)
 
-# construct MWST of the example graph, plot it and print its weight
-# spanning treee algorithms
-st_algo_list = ["prim","kruskal"]
-# st_algo ="kruskal"
+# Construct MWST of the example graph, plot it and print its weight
+prim_st = graph.prim()
+print 'MST WEIGHT : ' + str(prim_st.get_graph_weight())
+for e in prim_st.edges:
+    print e.edge_name,
+    print e.edge_cost
 
-s="INSTANCE_NAME ROOT PRIM_SOL KRUSKAL_SOL OPTIMAL_SOL"
-for root in graph.nodes:
-    for st_algo in st_algo_list:
-        print s
-        s = graph.graph_name + " " + repr(root)
-        dic = graph.rsl(root, st_algo)
-        s = s +" " + dic["c_c"]
-
+prim_st.plot_graph()

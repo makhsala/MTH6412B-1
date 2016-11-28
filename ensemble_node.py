@@ -1,4 +1,3 @@
-
 from node import Node
 
 
@@ -11,24 +10,20 @@ class EnsembleNode(Node):
     or tree if the structure doesn't show cycles
     """
 
-    def __init__(self, name='Sans nom', data=None, father=None, min_weight=None, original_node=None):
-        Node.__init__(self, name, data)
-        # if father is None:
-        #     self.__father = self
-        # else:
-
+    def __init__(self, name='Sans nom', data=None, visited=False, father=None, min_weight=None, original_node=None):
+        Node.__init__(self, name, data, visited)
         self.__original_node = original_node
         self.__father = father
         self.__min_weight = min_weight
         self.__rank = 0
-        self.__visited = False
+
+    @property
+    def original_node(self):
+        return self.__original_node
 
     @property
     def father(self):
         return self.__father
-    @property
-    def original_node(self):
-        return self.__original_node
 
     @property
     def rank(self):
@@ -38,13 +33,14 @@ class EnsembleNode(Node):
     def min_weight(self):
         return self.__min_weight
 
+    @original_node.setter
+    def original_node(self, node):
+        self.__original_node = node
+
     @father.setter
     def father(self, father):
         self.__father = father
 
-    @original_node.setter
-    def original_node(self,node):
-        self.__original_node = node
     @rank.setter
     def rank(self, rank):
         self.__rank = rank
@@ -61,18 +57,18 @@ class EnsembleNode(Node):
         while not parent.is_root():
             parent = parent.father
         return parent
-    
+
     def get_root_and_compress(self):
         """
         Iterative function that returns the root of
-        the linked ensemble/tree the node belongs to and 
+        the linked ensemble/tree the node belongs to and
         compress at the same time the research path
         """
         parent = self
         parents = []
         while not parent.is_root():
-             parents.append(parent)
-             parent = parent.father
+            parents.append(parent)
+            parent = parent.father
         root = parent
 
         # Set father of met nodes to the root af the linked component
@@ -85,14 +81,7 @@ class EnsembleNode(Node):
         Returns true if the node is the root of
         the linked ensemble/tree it belongs to, else false
         """
-        return (self.__father == None)
-
-    def set_visited(self):
-        self.__visited = True
-
-    def is_visited(self):
-        return self.__visited
-
+        return (self.__father is None)
 
     def __lt__(self, other):
         """methode pour comparer les noeuds < """
@@ -117,10 +106,9 @@ class EnsembleNode(Node):
         """
         own_root = self.get_root()
         other_root = otherEnsembleNode.get_root()
-        
+
         # The node and otherEnsembleNode must belong
         # to different nodes linked ensembles
-        # verifier si on reverifi cela a l interieur de Kruskal
 
         if own_root == other_root:
             raise ValueError("Nodes belong to the same linked ensembles")
@@ -138,7 +126,7 @@ class EnsembleNode(Node):
 
         if own_root.rank == other_root.rank:
             other_root.father = own_root
-            other_root.rank  += 1
+            other_root.rank += 1
         elif own_root.rank > other_root.rank:
             other_root.father = own_root
         else:
