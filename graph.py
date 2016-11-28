@@ -20,16 +20,14 @@ class Graph(object):
 
     def __init__(self, name='Sans nom'):
         self.__graph_name = name
-        self.__nodes = []   # Attribut prive.
+        self.__nodes = []  # Attribut prive.
         self.__edges = []
         self.__adj_matrix = {}  # matrice d'adjacence
         self.__graph_weight = 0
 
     def add_node(self, node):
-        """Ajouter un noeud au graphe et initialisé la matrice d'adjacence"""
 
         self.__nodes.append(node)
-
         self.__adj_matrix[node] = {}
 
     def add_edge(self, edge):
@@ -48,8 +46,6 @@ class Graph(object):
         self.__adj_matrix[endnode][startnode] = edge
         self.set_graph_weight(self.get_graph_weight()+ edge.edge_cost)
         self.__edges.append(edge)
-
-
 
     @property
     def graph_name(self):
@@ -162,7 +158,7 @@ class Graph(object):
         # graph nodes) and a list containing edges between these ensemble nodes
         ensemble_nodes = [EnsembleNode(
             name=node.node_name, data=node.node_data,
-            father=None) for node in self.nodes]
+            father=None, original_node=node ) for node in self.nodes]
         ensemble_edges = [Edge(
             name=edge.edge_name, data=edge.edge_data, cost=edge.edge_cost,
             startnode=ensemble_nodes[self.nodes.index(edge.edge_startnode)],
@@ -170,6 +166,8 @@ class Graph(object):
 
         # set spanning_tree nodes list
         spanning_tree.nodes = ensemble_nodes
+
+        # set spanning_tree nodes list
 
         # sort list of edges between ensemble nodes
         sorted_edges = sorted(ensemble_edges, key=getKey)
@@ -182,33 +180,27 @@ class Graph(object):
             # test whether the 2 nodes connected by the edges
             # belong to the same connected ensembles
             if edge.edge_startnode.get_root_and_compress() != edge.edge_endnode.get_root_and_compress():
-                spanning_tree.add_edge(edge)
+                spanning_tree.add_edge2(edge,edge.edge_startnode, edge.edge_endnode)
                 len_spanning_tree_edges =+ 1
                 edge.edge_startnode.rank_union(edge.edge_endnode)
 
         return spanning_tree
 
-    def prim(self):
+    def prim(self,root):
 
         spanning_tree = Graph(name=self.graph_name + " Prim algorithm spanning tree")
 
-
         # Initialisation of a queue containing all nodes
         nodes_queue = PriorityMinQueue()
-        # ensnode_to_node ={}
-        # choosing the source node as the first element in self.nodes list
-        node = self.nodes[0]
-        ensemble_node = EnsembleNode(name=node.node_name, data=node.node_data, min_weight=0, original_node=node)
-        # ensnode_to_node[ensemble_node] = node
-        spanning_tree.add_node(ensemble_node)
-        nodes_queue.enqueue(ensemble_node)
 
-        for node in self.nodes[1:]:
+        for node in self.nodes:
             ensemble_node = EnsembleNode(name=node.node_name,
                                          data=node.node_data, min_weight=float('inf'), original_node=node)
-            # ensnode_to_node[ensemble_node] = node
+            if node == root:
+                ensemble_node.min_weight = 0
             spanning_tree.add_node(ensemble_node)
             nodes_queue.enqueue(ensemble_node)
+
         # exploring graph nodes
         while not nodes_queue.is_empty():
             tuple_father = nodes_queue.dequeue()
@@ -233,27 +225,16 @@ class Graph(object):
 
         return spanning_tree
 
+    def node_to_ensnode(self, root_node):
+        for n in self.nodes:
+            if n.original_node == root_node:
+                return n
 
-    def dfs(self,root):
-        """
-         non recursive implementation
-        :return:
-        """
+    def dfs(self, root_node):
 
-        root = self.dfs_visit(root)
-        print root
-        parent = root.father
-        while parent:
-            print parent
-            parent = parent.father
-
-        return
-
-    def dfs_visit(self, root):
+        root = self.node_to_ensnode(root_node)
         cycle_nodes = []
         pile = Stack()
-
-        root.parent = None
         pile.push(root)
         neighbor = None
         # root devient racine d'une nouvelle arborescence
@@ -261,28 +242,41 @@ class Graph(object):
             u = pile.pop()
             cycle_nodes.append(u)
             u.set_visited()
-
             for neighbor in self.adj_matrix[u].keys():
                 if not neighbor.is_visited():
                     pile.push(neighbor)
         return cycle_nodes
 
-    def rsl(self):
-        G = self.prim()
-        root = G.nodes[0]
+    def rsl(self, root, st_algo):
+
+        if st_algo =="prim":
+            G = self.prim(root)
+
+        elif st_algo == "kruskal":
+            G = self.kruskal()
+        else:
+            raise ValueError("Unrecognized algorithm")
         # c_n cycle nodes
-        c_n = G.dfs_visit(root)
+        c_n = G.dfs(root)
         # c_edges
         c_e =[]
+        # cycle cost
+        c_c = 0.0
+        dic_ret = {}
+
+
         for i in xrange(len(c_n)-1):
-            c_e.append(self.adj_matrix[c_n[i].original_node][c_n[i+1].original_node])
-        c_e.append(self.adj_matrix[c_n[-1].original_node][c_n[0].original_node])
-        print c_e
-
-
-
-
-
+            e = self.adj_matrix[c_n[i].original_node][c_n[i+1].original_node]
+            c_c += e.edge_cost
+            c_e.append(e)
+        e = self.adj_matrix[c_n[-1].original_node][c_n[0].original_node]
+        c_e.append(e)
+        c_c += e.edge_cost
+       # print "cycle cost:",
+       # print c_c
+        dic_ret["c_e"] = c_e
+        dic_ret["c_c"] = c_c
+        return dic_ret
 
 if __name__ == '__main__':
 

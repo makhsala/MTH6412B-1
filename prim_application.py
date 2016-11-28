@@ -37,4 +37,15 @@ edge = Edge(name='BH', startnode=graph.nodes[8], endnode=graph.nodes[7], cost=7.
 graph.add_edge(edge)
 
 # construct MWST of the example graph, plot it and print its weight
-prim_st = graph.rsl()
+# spanning treee algorithms
+st_algo_list = ["prim","kruskal"]
+# st_algo ="kruskal"
+
+s="INSTANCE_NAME ROOT PRIM_SOL KRUSKAL_SOL OPTIMAL_SOL"
+for root in graph.nodes:
+    for st_algo in st_algo_list:
+        print s
+        s = graph.graph_name + " " + repr(root)
+        dic = graph.rsl(root, st_algo)
+        s = s +" " + dic["c_c"]
+
