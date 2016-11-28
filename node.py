@@ -12,16 +12,13 @@ class Node(object):
     Une classe generique pour representer les noeuds d'un graphe.
     """
 
-    def __init__(self, name='Sans nom', data=None):
+    def __init__(self, name='Sans nom', data=None, visited=False):
         self.__node_name = name
+        self.__visited = visited
         if data is not None:
             self.__node_data = data
         else:
-            self.__node_data = (round(random.random() * 1000, 2),round(random.random() * 1000, 2))
-
-    @property
-    def node_count(self):
-        return self.__node_count
+            self.__node_data = (round(random.random() * 1000, 2), round(random.random() * 1000, 2))
 
     @property
     def node_name(self):
@@ -29,14 +26,17 @@ class Node(object):
         return self.__node_name
 
     @property
-    def node_id(self):
-        """Donne le numéro d'identification du noeud."""
-        return self.__node_id
-
-    @property
     def node_data(self):
         """Donne les données contenues dans le noeud."""
         return (self.__node_data)
+
+    @property
+    def visited(self):
+        return self.__visited
+
+    @visited.setter
+    def visited(self, visited):
+        self.__visited = visited
 
     @node_name.setter
     def node_name(self, name):
@@ -51,8 +51,7 @@ class Node(object):
     def __repr__(self):
         name = self.node_name
         data = self.node_data
-        s = str(data)
-        #s += ' (donnees: ' + repr(data) + ')'
+        s = 'Noeud  '+name
         return s
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ class Queue(object):
     @property
     def items(self):
         return self._items
-        
+
     def enqueue(self, item):
         "Ajoute `item` a la fin de la file."
         self.items.append(item)
@@ -45,7 +45,6 @@ class PriorityMinQueue(Queue):
 
     def dequeue(self):
         "Retire l'objet ayant la plus petite priorite."
-
         return self.items.pop(self.items.index(min(self.items)))
 
 

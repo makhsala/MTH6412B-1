@@ -4,7 +4,6 @@ Created on Sun Sep 18 20:06:37 2016
 
 @author: makhloufi, lacroix
 """
-
 import numpy as np
 from edge import Edge
 from ensemble_node import EnsembleNode
@@ -21,32 +20,24 @@ class Graph(object):
 
     def __init__(self, name='Sans nom'):
         self.__graph_name = name
-        self.__nodes = []  # Attribut prive.
+        self.__nodes = []   # Attribut prive.
         self.__edges = []
         self.__adj_matrix = {}  # matrice d'adjacence
         self.__graph_weight = 0
 
     def add_node(self, node):
-
+        """Ajouter un noeud au graphe et initialisé la matrice d'adjacence"""
         self.__nodes.append(node)
         self.__adj_matrix[node] = {}
 
     def add_edge(self, edge):
         "Ajout un edge au graphe et remplissage de adj_matrix"
-        # on rempli la matrice d'adjacence à chaque fois on ajoute un arc
-        # < pour éviter de stocker l'arrete deux fois
         if (edge.edge_startnode != edge.edge_endnode):
             self.__adj_matrix[edge.edge_startnode][edge.edge_endnode] = edge
             self.__adj_matrix[edge.edge_endnode][edge.edge_startnode] = edge
-            self.set_graph_weight(self.get_graph_weight()+ edge.edge_cost)
             self.__edges.append(edge)
-
-    def add_edge2(self, edge, startnode, endnode):
-
-        self.__adj_matrix[startnode][endnode] = edge
-        self.__adj_matrix[endnode][startnode] = edge
-        self.set_graph_weight(self.get_graph_weight()+ edge.edge_cost)
-        self.__edges.append(edge)
+            # Update graph_weight attribute
+            self.set_graph_weight(self.get_graph_weight() + edge.edge_cost)
 
     @property
     def graph_name(self):
@@ -86,18 +77,19 @@ class Graph(object):
         "Donne le nombre de noeuds du graphe."
         return (len(self.nodes))
 
-    def set_graph_weight(self,weight):
+    def set_graph_weight(self, weight):
         self.__graph_weight = weight
 
     def get_graph_weight(self):
         return self.__graph_weight
 
     def get_edge(self, startnode, endnode):
-        for edge in self.edges:
-            if (((edge.edge_startnode == startnode) & (edge.edge_endnode == endnode)) |
-                    ((edge.edge_startnode == endnode) & (edge.edge_endnode == startnode))):
-                return edge
-        return None
+        edge = self.adj_matrix.get(startnode).get(endnode)
+        if edge == None:
+            raise ValueError("Edge not found in Adj Matrix")
+        else:
+            return edge
+ 
 
     def __repr__(self):
         name = self.graph_name
@@ -111,6 +103,10 @@ class Graph(object):
         s += str(self.adj_matrix)
         return s
 
+    def reset_visited_nodes(self):
+        for node in self.nodes:
+            node.visited = False
+
     def plot_graph(self):
         """
         Plot the graph represented by `nodes` and `edges` using Matplotlib.
@@ -121,8 +117,8 @@ class Graph(object):
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        x = [int(node.node_data[0]) for node in self.__nodes]  # liste des abscisses
-        y = [int(node.node_data[1]) for node in self.__nodes]  # liste des ordonnées
+        x = [int(node.node_data[0]) for node in self.__nodes]  # liste abscisses
+        y = [int(node.node_data[1]) for node in self.__nodes]  # liste ordonnées
 
         # Plot edges.
         edge_pos = np.asarray([(e.edge_startnode.node_data, e.edge_endnode.node_data
@@ -140,10 +136,9 @@ class Graph(object):
         return
 
     def kruskal(self):
-        """ 
-        Kruskal algo: this function returns a graph
-        that is the minimal weight spanning tree of the graph.
-        Uses EnsembleNode class.
+        """
+        Kruskal algo: this function returns a graph composed with
+        Node Object that is the minimal weight spanning tree of the graph.
         """
 
         nb_noeuds = self.get_nb_nodes()
@@ -157,119 +152,135 @@ class Graph(object):
         # graph nodes) and a list containing edges between these ensemble nodes
         ensemble_nodes = [EnsembleNode(
             name=node.node_name, data=node.node_data,
-            father=None, original_node=node ) for node in self.nodes]
+            father=None, original_node=node) for node in self.nodes]
         ensemble_edges = [Edge(
             name=edge.edge_name, data=edge.edge_data, cost=edge.edge_cost,
             startnode=ensemble_nodes[self.nodes.index(edge.edge_startnode)],
             endnode=ensemble_nodes[self.nodes.index(edge.edge_endnode)]) for edge in self.edges]
 
         # set spanning_tree nodes list
-        spanning_tree.nodes = ensemble_nodes
-
-        # set spanning_tree nodes list
+        spanning_tree.nodes = self.nodes
 
         # sort list of edges between ensemble nodes
         sorted_edges = sorted(ensemble_edges, key=getKey)
-        len_spanning_tree_edges = 0
+
+        n_edge_added = 0
+        # Explore sorted edges list
         for edge in sorted_edges:
             # stopping condition of the algorithm
-            if len_spanning_tree_edges == nb_noeuds-1:
+            if n_edge_added == nb_noeuds-1:
                 break
 
             # test whether the 2 nodes connected by the edges
             # belong to the same connected ensembles
             if edge.edge_startnode.get_root_and_compress() != edge.edge_endnode.get_root_and_compress():
-                spanning_tree.add_edge2(edge,edge.edge_startnode, edge.edge_endnode)
-                len_spanning_tree_edges =+ 1
-                edge.edge_startnode.rank_union(edge.edge_endnode)
+                startnode = edge.edge_startnode
+                endnode = edge.edge_endnode
+                spanning_tree.add_edge(self.get_edge(startnode.original_node, endnode.original_node))
+                startnode.rank_union(endnode)
+                n_edge_added += 1
 
         return spanning_tree
 
-    def prim(self,root):
+    def prim(self, root):
+        """
+        Prim algo: this function returns a graph composed with
+        Node objects that is the minimal weight spanning tree
+        of the graph computed by Prim algorithm.
+        """
 
-        spanning_tree = Graph(name=self.graph_name + " Prim algorithm spanning tree")
+        spanning_tree = Graph(name=self.graph_name + " Prim algo ST")
+        spanning_tree.nodes = self.nodes
 
-        # Initialisation of a queue containing all nodes
+        # Init of algorithm data structures: queue containing EnsembleNode
+        # nodes
         nodes_queue = PriorityMinQueue()
 
-        for node in self.nodes:
+        # Fill nodes_queue with EnsembleNode objects and
+        # add corresponding entries in ensnode_to_node
+        for node in self.nodes[:]:
             ensemble_node = EnsembleNode(name=node.node_name,
-                                         data=node.node_data, min_weight=float('inf'), original_node=node)
+                                        data=node.node_data,
+                                        min_weight=float('inf'),
+                                        original_node=node)
             if node == root:
                 ensemble_node.min_weight = 0
-            spanning_tree.add_node(ensemble_node)
             nodes_queue.enqueue(ensemble_node)
 
-        # exploring graph nodes
+        # Dequeuing nodes in nodes_queue until queue is empty
         while not nodes_queue.is_empty():
-            tuple_father = nodes_queue.dequeue()
+            ens_n = nodes_queue.dequeue()
+            n = ens_n.original_node  # n is the corresponding Node object
 
-            if tuple_father.father:
-                edge_add = self.adj_matrix[tuple_father.original_node][tuple_father.father.original_node]
-                spanning_tree.add_edge2(edge_add, tuple_father, tuple_father.father)
+            # If ens_n has no father : this is first node to be chosen and there
+            # is no edge to add to spanning tree
+            if not ens_n.is_root():
+                edge_to_add = self.get_edge(n, ens_n.father.original_node)
+                spanning_tree.add_edge(edge_to_add)
 
-            for key in self.adj_matrix[tuple_father.original_node].keys():
+            # Explore n neighbors
+            for u in self.adj_matrix[n].keys():
+                # Explore nodes_queue.items until we find corresponding EnsNode
+                for t in nodes_queue.items:
+                    if (t.original_node == u) &\
+                            (self.get_edge(n, u).edge_cost < t.min_weight):
 
-                for n in nodes_queue.items:
-
-                    if (n.original_node == key) and\
-                            (self.adj_matrix[tuple_father.original_node][key].edge_cost < n.min_weight):
-
-                        adj_edge = self.adj_matrix[tuple_father.original_node][key]
-                        # instead of searching the key by item for to get the adjacency matrix row,
-                        # we used a tuple to avoid the search for the right key in every iteration
-                        n.father = tuple_father
-                        n.min_weight = adj_edge.edge_cost
+                        # t is now EnsembleNode corresponding to u
+                        adj_edge = self.get_edge(n, u)
+                        t.father = ens_n
+                        t.min_weight = adj_edge.edge_cost
                         break
 
         return spanning_tree
 
-    def node_to_ensnode(self, root_node):
-        for n in self.nodes:
-            if n.original_node == root_node:
-                return n
+    def dfs(self, root):
+            """
+            Depth first search algorithm
+            returns a sorted list of Node Object visited
+            during Depth First Search
+            """
 
-    def dfs(self, root_node):
-        """
-        Depth first search algorithm
-        returns a sorted list of nodes to construct
-        a cycle by linking the i and i+1 node
-        """
-        root = self.node_to_ensnode(root_node)
-        cycle_nodes = []
-        pile = Stack()
-        pile.push(root)
-        neighbor = None
-        while not pile.is_empty():
-            u = pile.pop()
-            cycle_nodes.append(u)
-            u.set_visited()
-            for neighbor in self.adj_matrix[u].keys():
-                if not neighbor.is_visited():
-                    pile.push(neighbor)
-        return cycle_nodes
+            visited_nodes = []
+            pile = Stack()
+            pile.push(root)
+            neighbor = None
+
+            while not pile.is_empty():
+                u = pile.pop()
+                visited_nodes.append(u)
+                u.visited = True
+                for neighbor in self.adj_matrix[u].keys():
+                    if not neighbor.visited:
+                        pile.push(neighbor)
+
+            self.reset_visited_nodes()  # Reset modifs algorithm made on graph nodes
+            return visited_nodes
 
     def rsl(self, root, st_algo):
 
-        if st_algo =="prim":
-            G = self.prim(root)
+        if st_algo == "prim":
+            G_st = self.prim(root)
 
         elif st_algo == "kruskal":
-            G = self.kruskal()
+            G_st = self.kruskal()
         else:
-            raise ValueError("Unrecognized algorithm")
-        # c_n cycle nodes
-        c_n = G.dfs(root)
-        cycle = Graph("tournee")
-        cycle.nodes = self.nodes
+            raise ValueError("Unrecognized Spanning Tree algorithm")
 
-        for i in xrange(len(c_n)-1):
-            e = self.adj_matrix[c_n[i].original_node][c_n[i+1].original_node]
+        # Instantiate Graph corresponding Hamiltonian cycle
+        st_dfs_nodes = G_st.dfs(root)
+        ham_cycle = Graph(self.graph_name + " Hamiltonian Cycle")
+        ham_cycle.nodes = self.nodes
 
-            cycle.add_edge(e)
-        e = self.adj_matrix[c_n[-1].original_node][c_n[0].original_node]
-        cycle.add_edge(e)
-        return cycle
+        # Add edges between sequential nodes in st_dfs_nodes to ham_cycle
+        for i in range(len(st_dfs_nodes)-1):
+            edge_to_add = self.get_edge(st_dfs_nodes[i], st_dfs_nodes[i+1])
+            ham_cycle.add_edge(edge_to_add)
+
+        # Add last edge to ham_cycle
+        last_edge = self.get_edge(st_dfs_nodes[-1], st_dfs_nodes[0])
+        ham_cycle.add_edge(last_edge)
+
+        return ham_cycle
 
 if __name__ == '__main__':
 
